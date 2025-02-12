@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -15,6 +16,7 @@ func TestTransferTx(t *testing.T) {
 
 	account1 := creatRandomAccount(t)
 	account2 := creatRandomAccount(t)
+	fmt.Println(">> before Balance:", account1.Balance, account2.Balance)
 
 	// run n concurrent transfer transanctions
 
@@ -34,10 +36,11 @@ func TestTransferTx(t *testing.T) {
 
 			errs <- err
 			resluts <- result
-		}()
+		}() // 最后这个括号表示立刻执行这个 匿名函数
 	}
 
 	//check resluts
+	existed := make(map[int]bool)
 	for i := 0; i < n; i++ {
 		err := <-errs
 		require.NoError(t, err)
@@ -80,6 +83,37 @@ func TestTransferTx(t *testing.T) {
 		require.NoError(t, err)
 
 		//TODO: check accounts' balance
+		// check account
+		fromAccount := result.FromAccount
+		require.NotEmpty(t, fromAccount)
+		require.Equal(t, account1.ID, fromAccount.ID)
 
+		toAccount := result.ToAccount
+		require.NotEmpty(t, toAccount)
+		require.Equal(t, account2.ID, toAccount.ID)
+
+		// check accounts' balance
+		fmt.Println(">> TX:", fromAccount.Balance, toAccount.Balance)
+		diff1 := account1.Balance - fromAccount.Balance
+		diff2 := toAccount.Balance - account2.Balance
+		require.Equal(t, diff1, diff2)
+		require.True(t, diff1 > 0)
+		require.True(t, diff1%amount == 0)
+
+		k := int(diff1 / diff2)
+		require.True(t, k >= 1 && k <= n)
+		require.NotContains(t, existed, k)
+		existed[k] = true
 	}
+
+	// check the finla updated balances
+	updatedAccount1, err := testQueries.GetAccout(context.Background(), account1.ID)
+	require.NoError(t, err)
+
+	updatedAccount2, err := testQueries.GetAccout(context.Background(), account2.ID)
+	require.NoError(t, err)
+
+	fmt.Println(">> after Balance:", updatedAccount1.Balance, updatedAccount2.Balance)
+	require.Equal(t, account1.Balance-int64(n)*amount, updatedAccount1.Balance)
+	require.Equal(t, account2.Balance+int64(n)*amount, updatedAccount2.Balance)
 }
