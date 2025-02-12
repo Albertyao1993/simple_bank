@@ -20,6 +20,8 @@ func NewStore(db *sql.DB) *Store {
 	}
 }
 
+var txKey = struct{}{}
+
 // exceTx executes a function within a database transanction
 func (store *Store) execTx(ctx context.Context, fn func(*Queries) error) error {
 	tx, err := store.db.BeginTx(ctx, nil)
@@ -62,9 +64,16 @@ func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
 
 	var result TransferTxResult
 
+	if arg.FromAccountID == arg.ToAccountID {
+		return result, fmt.Errorf("cannot transfer to same account")
+	}
+
 	err := store.execTx(ctx, func(q *Queries) error {
 
 		var err error
+
+		// txName := ctx.Value(txKey)
+		// fmt.Println(txName, "create transfer")
 
 		// create a transfer record
 		result.Transfer, err = q.CreateTransfer(ctx, CreateTransferParams{
@@ -78,6 +87,7 @@ func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
 		}
 
 		//add account entries  FromEntry and ToEntry
+		// fmt.Println(txName, "create entry 1")
 		result.FromEntry, err = q.CreateEntry(ctx, CreateEntryParams{
 			AccountID: arg.FromAccountID,
 			Amount:    -arg.Amount,
@@ -86,6 +96,7 @@ func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
 			return err
 		}
 		//add account entries
+		// fmt.Println(txName, "create entry 2")
 		result.ToEntry, err = q.CreateEntry(ctx, CreateEntryParams{
 			AccountID: arg.ToAccountID,
 			Amount:    arg.Amount,
@@ -95,6 +106,63 @@ func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
 		}
 
 		// TODO : update accounts' balance  ----- it cover lock operaration
+
+		// 获取原始账户信息
+		// fmt.Println(txName, "get account 1")
+		account1, err := q.GetAccoutForUpdate(ctx, arg.FromAccountID)
+		if err != nil {
+			return err
+		}
+
+		// 更新账户
+		// fmt.Println(txName, "update account 1 balance")
+		err = q.UpdateAccount(ctx, UpdateAccountParams{
+			ID:      arg.FromAccountID,
+			Balance: account1.Balance - arg.Amount,
+		})
+		if err != nil {
+			return err
+		}
+
+		// 验证更新后的账户信息
+		result.FromAccount, err = q.GetAccout(ctx, arg.FromAccountID)
+		if err != nil {
+			return err
+		}
+
+		// 可以添加余额验证
+		if result.FromAccount.Balance != account1.Balance-arg.Amount {
+			return fmt.Errorf("balance not updated correctly")
+		}
+
+		// 获取第二个账户信息
+		// fmt.Println(txName, "get account 2")
+		account2, err := q.GetAccoutForUpdate(ctx, arg.ToAccountID)
+		if err != nil {
+			return err
+		}
+
+		// 更新第二个账户
+		// fmt.Println(txName, "update account 2 balance")
+		err = q.UpdateAccount(ctx, UpdateAccountParams{
+			ID:      arg.ToAccountID,
+			Balance: account2.Balance + arg.Amount,
+		})
+		if err != nil {
+			return err
+		}
+
+		// 验证更新后的账户信息
+		result.ToAccount, err = q.GetAccout(ctx, arg.ToAccountID)
+		if err != nil {
+			return err
+		}
+
+		// 可以添加余额验证
+		if result.ToAccount.Balance != account2.Balance+arg.Amount {
+			return fmt.Errorf("balance not updated correctly")
+		}
+
 		return nil
 	})
 	return result, err
