@@ -16,6 +16,7 @@ func RandomInt(min_val, max_val int64) int64 {
 	return min_val + rand.Int63n(max_val-min_val+1)
 }
 
+// Random string generate
 func RandomString(n int) string {
 	var sb strings.Builder
 
