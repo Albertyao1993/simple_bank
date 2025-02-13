@@ -109,7 +109,7 @@ func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
 
 		// 获取原始账户信息
 		// fmt.Println(txName, "get account 1")
-		account1, err := q.GetAccoutForUpdate(ctx, arg.FromAccountID)
+		account1, err := q.GetAccountForUpdate(ctx, arg.FromAccountID)
 		if err != nil {
 			return err
 		}
@@ -125,7 +125,7 @@ func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
 		}
 
 		// 验证更新后的账户信息
-		result.FromAccount, err = q.GetAccout(ctx, arg.FromAccountID)
+		result.FromAccount, err = q.GetAccount(ctx, arg.FromAccountID)
 		if err != nil {
 			return err
 		}
@@ -137,7 +137,7 @@ func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
 
 		// 获取第二个账户信息
 		// fmt.Println(txName, "get account 2")
-		account2, err := q.GetAccoutForUpdate(ctx, arg.ToAccountID)
+		account2, err := q.GetAccountForUpdate(ctx, arg.ToAccountID)
 		if err != nil {
 			return err
 		}
@@ -153,7 +153,7 @@ func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
 		}
 
 		// 验证更新后的账户信息
-		result.ToAccount, err = q.GetAccout(ctx, arg.ToAccountID)
+		result.ToAccount, err = q.GetAccount(ctx, arg.ToAccountID)
 		if err != nil {
 			return err
 		}

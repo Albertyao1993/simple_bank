@@ -108,10 +108,10 @@ func TestTransferTx(t *testing.T) {
 	}
 
 	// check the finla updated balances
-	updatedAccount1, err := testQueries.GetAccout(context.Background(), account1.ID)
+	updatedAccount1, err := testQueries.GetAccount(context.Background(), account1.ID)
 	require.NoError(t, err)
 
-	updatedAccount2, err := testQueries.GetAccout(context.Background(), account2.ID)
+	updatedAccount2, err := testQueries.GetAccount(context.Background(), account2.ID)
 	require.NoError(t, err)
 
 	// fmt.Println(">> after Balance:", updatedAccount1.Balance, updatedAccount2.Balance)
