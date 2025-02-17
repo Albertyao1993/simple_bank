@@ -14,15 +14,29 @@ import (
 // Server serves HTTP request for banking services
 type Server struct {
 	config     util.Config
-	store      *db.Store
+	store      db.Store
 	tokenMaker token.Maker
 	router     *gin.Engine
 }
 
-func NewServer(config util.Config, store *db.Store) (*Server, error) {
+func NewTestServer(store db.Store) (*Server, error) {
+	server := &Server{
+		// config:     config,
+		store: store,
+		// tokenMaker: tokenMaker,
+	}
+
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		v.RegisterValidation("currency", validCurrency)
+	}
+	server.setupRouter()
+	return server, nil
+
+}
+func NewServer(config util.Config, store db.Store) (*Server, error) {
 	tokenMaker, err := token.NewPasetoMaker(config.TokenSymmetricKey)
 	if err != nil {
-		return nil, fmt.Errorf("Can not create Token!: %w", err)
+		return nil, fmt.Errorf("can not create Token!: %w", err)
 	}
 	server := &Server{
 		config:     config,

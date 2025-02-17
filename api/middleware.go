@@ -27,7 +27,7 @@ func authMiddleware(tokenMaker token.Maker) gin.HandlerFunc {
 
 		fields := strings.Fields(authorizationHeader)
 		if len(fields) < 2 {
-			err := errors.New("Invalid header is not provided")
+			err := errors.New("invalid header is not provided")
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, errorResponse(err))
 			return
 		}
