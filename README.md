@@ -6,7 +6,6 @@ Simple Bank is a simple banking system that provides basic account management an
 
 - **Go**: The backend service is written in Go, offering high performance and concurrency handling.
 - **Gin**: The Gin framework is used to build RESTful APIs, providing fast and flexible routing.
-- **GORM**: GORM is used as the ORM framework to simplify database operations.
 - **PostgreSQL**: PostgreSQL is used as the database to store user and transaction data.
 - **Docker**: Docker is used to containerize the application, simplifying deployment and environment configuration.
 - **JWT**: JSON Web Tokens are used for user authentication and authorization.
@@ -25,10 +24,10 @@ Simple Bank is a simple banking system that provides basic account management an
 ### AWS ECR and EKS
 
 This project supports deployment on AWS's ECR (Elastic Container Registry) and EKS (Elastic Kubernetes Service).
+<!-- 
+#### Deployment Steps -->
 
-#### Deployment Steps
-
-1. **Build Docker Image**:
+<!-- 1. **Build Docker Image**:
    ```bash
    docker build -t simple_bank .
    ```
@@ -87,7 +86,7 @@ This project supports deployment on AWS's ECR (Elastic Container Registry) and E
    - Apply the configuration:
      ```bash
      kubectl apply -f simple_bank_deployment.yaml
-     ```
+     ``` -->
 
 ## Quick Start
 
@@ -105,9 +104,6 @@ This project supports deployment on AWS's ECR (Elastic Container Registry) and E
 3. **Access the API**:
    The API will run on `http://localhost:8080`, and you can test it using Postman or other tools.
 
-## Contributing
-
-Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) to learn how to participate in the project.
 
 ## License
 
